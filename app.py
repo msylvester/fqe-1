@@ -3,9 +3,9 @@
 
 # from __future__ import print_function
 from flask import Flask, request, redirect, session
-import twilio.twiml
-from slacker import Slacker
-from twilio.rest import TwilioRestClient
+
+
+
 from time import gmtime, strftime
 import json
 from random import randint
@@ -19,40 +19,12 @@ import requests # For the webhook
 
 
 
-
-from Controller.apiai_manager import apiai_query
-
-from Controller.message import Button, SendMessage, Element
-from Model.Location import *
-from Controller.postbacks import *
-from Controller.admin_driver import driver
-from Controller.user_driver import user_routing
-from Controller.apiai_manager import *
-
-from View.admin_messages import *
-from View.user_messages  import *
-
-
-try:
-    import apiai
-except ImportError:
-    sys.path.append(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
-    )
-    import apiai
-
-
-
 HUB_VERIFY_TOKEN = "hello"
 fbToken = os.environ.get('EAAMnZBjjGep0BAKZB3KSM9qcMN0eC0Fw25jDjNDP9icLWb4gX9fjiTQUZApYq8TJ3XzKYh6QdHwvOroZCSYPxcoCAm5ygZCu7qlO7Vm3B5AhniGVacqliZBA7lYDRLzZAsu2cOtvlBd1XSLRTwRNK0Kts79ppFd2SfAsfZAulQQfLwZDZD')
 
-firebase_credential = os.environ.get('FIREBASE_ACCESS_TOKEN')
-account_sid = os.environ.get('TWILIO_ACCOUNT_SID') # Twilio
-auth_token = os.environ.get('TWILIO_ACCOUNT_AUTH_TOKEN') # Twilio
+
 facebook_url = "https://graph.facebook.com/v2.6/me/messages?access_token=" + str(fbToken) # Messenger
-client = TwilioRestClient(account_sid, auth_token) # Twilio client
-twilio_phone = os.environ.get('TWILIO_PHONE') # Twilio
-slack = Slacker(os.environ.get('SLACK')) # Slack
+
 TIMEZONE = 'US/Pacific'
 
 
@@ -64,65 +36,6 @@ app.config.from_object(__name__)
 # MARK: helper methods
 # twilio_to_slack: pushes an incoming message to slack
 # -Parmaters: sender = fbPageID , message = Message to send to slack
-def twilio_to_slack(sender, message):
-    if sender is not None:
-
-        #this is for fb
-        slack_channel = "#" + sender
-    else:
-        slack_channel = "#nonumber"
-
-    # Get a list of all channels
-    all_channels = slack.channels.list()
-    json_dump = json.dumps(all_channels.body)
-    parsed_json = json.loads(json_dump)
-    channels = parsed_json["channels"]
-    channels_array = []
-    for channel in channels:
-        channel_name = channel["name"]
-        channels_array.append(channel_name)
-
-    s = slack_channel[1:]
-
-    #block channel if it is is blocked
-    #check to see if there is channel blocked
-    if "blocked" + s in channels_array:
-        return ""
-
-
-    if s in channels_array:
-        print("in the array")
-    else:
-        #get a random number between 0 and the length of the userlist and invite this user to the new channel
-        user_list = get_user_list()
-        user_random = randint(0, len(user_list) - 1)
-        slack.channels.join(slack_channel)
-        channel_id =  slack.channels.get_channel_id(s)
-        slack.channels.invite(channel_id, user_list[user_random])
-
-
-    # Get the channel ID
-    channel_id = slack.channels.get_channel_id(s)
-
-    # Check if channel is archived or unarchived by checking the channel info
-    # If archived, unarchive it
-    channel_info = slack.channels.info(channel_id)
-    channel_info_json = json.dumps(channel_info.body)
-    parsed_json = json.loads(channel_info_json)
-    is_archived = parsed_json["channel"]["is_archived"]
-    print(channel_info_json)
-    if is_archived:
-
-        slack.channels.unarchive(channel_id)
-        user_list = get_user_list()
-        user_random = randint(0, len(user_list) - 1)
-        slack.channels.join(slack_channel)
-        slack.channels.invite(channel_id, user_list[user_random])
-    else:
-
-        print("was not archived")
-    slack.chat.post_message(channel=slack_channel, text=message.decode('utf-8'), username='HANS: message inbound')
-
 
 #MARK: FBGet
 @app.route("/webhook", methods=["GET"])
