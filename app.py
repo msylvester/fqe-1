@@ -57,7 +57,7 @@ def webhook():
         # msg.sendMessage("hey")
         # msg.sendMessage(data)
 
-
+        console.log(data)
 
         payload = {'recipient': {'id': sender}, 'message': {"text": "hey"}} # We're going to send this back
         r = requests.post('https://graph.facebook.com/v2.6/me/messages/?access_token=' + fbToken, json=payload)
@@ -70,5 +70,5 @@ def webhook():
     except Exception as e:
         print(e)
 
-    return ""
+   
     #     #TODO check if they sent an audio message
