@@ -57,7 +57,7 @@ def webhook():
         # msg.sendMessage("hey")
         # msg.sendMessage(data)
 
-        console.log(data)
+        print(data)
 
         payload = {'recipient': {'id': sender}, 'message': {"text": "hey"}} # We're going to send this back
         r = requests.post('https://graph.facebook.com/v2.6/me/messages/?access_token=' + fbToken, json=payload)
